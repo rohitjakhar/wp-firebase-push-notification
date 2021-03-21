@@ -107,13 +107,14 @@ Class Firebase_Push_Notification
         // $from = get_bloginfo('name');
         // $content = 'There are new post notification from '.$from;
         $content = $post->post_title;
+        $img_url = $post->post_feature_image;
 
         if (get_option('stf_fcm_api') && get_option('fcm_topic')) {
             $published_at_least_once = get_post_meta( $post_id, 'is_published', true );
 
             if (!$published_at_least_once && get_option('fcm_disable') != 1) {
                 $published_at_least_once = true;
-                $this->fcm_notification($content, (string) $post_id);
+                $this->fcm_notification($content, (string) $post_id, $img_url);
             }
 
             update_post_meta( $post_id, 'is_published', $published_at_least_once );
@@ -138,7 +139,7 @@ Class Firebase_Push_Notification
         echo '</div>';
     }
 
-    function fcm_notification($content, $post_id){
+    function fcm_notification($content, $post_id, $img_url){
         $topic =  "'".get_option('fcm_topic')."' in topics";
         $apiKey = get_option('stf_fcm_api');
         $url = 'https://fcm.googleapis.com/fcm/send';
@@ -148,15 +149,16 @@ Class Firebase_Push_Notification
         );
         $notification_data = array(
             // when application open then post field 'data' parameter work so 'message' and 'body' key should have same text or value
-            'message'           => $content,
-            'post_id'           => $post_id
+            'title'           => $content,
+            'postId'           => $post_id,
+            'img-url'          => $img_url
         );
 
-        $notification = array(
-            // when application close then post field 'notification' parameter work
-            'body'  => $content,
-            'sound' => 'default'
-        );
+        // $notification = array(
+        //     // when application close then post field 'notification' parameter work
+        //     'body'  => $content,
+        //     'sound' => 'default'
+        // );
 
         $post = array(
             'condition'         => $topic,
